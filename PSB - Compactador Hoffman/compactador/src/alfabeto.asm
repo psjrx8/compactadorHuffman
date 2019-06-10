@@ -1,7 +1,82 @@
-;Função exibir frequencia
+;funcExibirAlfabeto()
+funcCriarAlfabeto:
+push ebp
+mov ebp, esp
+  push ecx
+  push ebx
+
+  mov ecx, 128                ;Determina range do loop (127 iterações)
+  mov ebx, 0                  ;Define valor inicial do índice do array
+  preencherAlfabeto:
+  mov [alfabeto + ebx], ebx   ;Atribui ao array o valor do índice
+  add ebx, 4                  ;Incrementa registrador do índice
+  loop preencherAlfabeto
+
+  pop ebx
+  pop ecx
+pop ebp
+ret
+
+;funcExibirAlfabeto()
+funcExibirAlfabeto:
+push ebp
+mov ebp, esp
+  push ecx
+  push ebx
+  push eax
+
+  call print_nl
+  mov ecx, 128
+  mov ebx, 0                      ;i = 0
+  exibirAlfabeto:
+      mov eax, [alfabeto + ebx]   ;eax = alfabeto[i]
+      add ebx, 4                 ;i++
+
+      push eax
+        call funcImprimirLetra
+      pop eax
+
+      loop exibirAlfabeto
+  call print_nl
+
+  pop eax
+  pop ebx
+  pop ecx
+pop ebp
+ret
+
+;funcImprimirLetra(int letra)
+funcImprimirLetra:
+push ebp
+mov ebp, esp
+    push eax
+    push ebx
+    push eax
+
+    mov eax, [ebp + 8]  ;eax = alfabeto[i]
+    mov ebx, 4
+    cdq
+    div ebx
+    call print_char
+
+    push eax
+      call funcImprimirSeparador
+    pop eax
+
+    pop eax
+    pop ebx
+    pop eax
+pop ebp
+ret
+
+;funcExibirFrequencia()
 funcExibirFrequencia:
 push ebp
 mov ebp, esp
+  push ecx
+  push ebx
+  push eax
+
   call print_nl
   mov ecx, 128
   mov ebx, 0                        ;i = 0
@@ -9,27 +84,75 @@ mov ebp, esp
       mov eax, [frequencia + ebx]   ;eax = frequencia[1]
       add ebx, 4                    ;i++
       call print_int                ;Imprime frequencia
-      mov eax, ' '
-      call print_char               ;Imprime separador
+
+      push eax
+        call funcImprimirSeparador
+      pop eax
+
       loop exibirFrequencia
   call print_nl
+
+  pop eax
+  pop ebx
+  pop ecx
 pop ebp
 ret
 
-funcExibirAlfabeto:
+;funcOrdenarAlfabeto()
+;Tem por objetivo ordernar o vetor Alfabeto com base no valor da frequencia
+funcOrdenarAlfabeto:
 push ebp
 mov ebp, esp
-  call print_nl
-  mov ecx, 128
-  mov ebx, 0                      ;i = 0
-  exibirAlfabeto:
-      mov eax, [alfabeto + ebx]   ;eax = alfabeto[i]
-      add ebx, 4                  ;i++
-      call print_int
+    push edx
+    push ecx
+    push ebx
+    push eax
+
+    ;Ordenação do array de frquencia
+    mov ecx, 127
+    mov ebx, 0
+    ;Dois LOOPS aninhados para ordernar o array de forma crescente
+    ;Ex.: [1],[5],[3],[2],[4]
+    ;Loop INTERNO 1: [5],[1],[3],[2],[4]
+    ;Loop INTERNO n: [5],[3],[2],[4],[1]
+    ;Loop EXTERNO n: [5],[4],[3],[2],[1]
+    ordernarAlfabeto:                   ;Algorítmo de ordenação BubbleSort
+        push ecx                        ;Empilha ecx para evitar alteração no LOOP INTERNO
+        push ebx                        ;Empilha ebx para evitar alteração no LOOP INTERNO
+        subOrdenarAlfabeto:             ;Início do loop interno
+          mov eax, [frequencia + ebx]   ;Armazena "posição atual"
+          add ebx, 4                    ;Incrementa índice
+          mov edx, [frequencia + ebx]   ;Armazena "posição seguinte"
+          cmp eax, edx                  ;Compara "posição atual" e "posição seguinte"
+          jle  sairSubOrdenarAlfabeto   ;Se "posição atual" > "posição seguinte" NOP (No operation)
+                                        ;else
+          push ecx                      ;Empilha ecx para evitar alteração na FUNÇÃO interna
+          push ebx                      ;Empilha ebx para evitar alteração na FUNÇÃO interna
+            call funcBubbleAlfabeto     ;Função para trocar valores das "posição atual" e "posição seguinte"
+          pop ebx                       ;Desempilha ebx para LOOP INTERNO
+          pop ecx                       ;Desempilha ecx para LOOP INTERNO
+          sairSubOrdenarAlfabeto:
+          loop subOrdenarAlfabeto
+        pop ebx                         ;Desempilha ebx para LOOP EXTERNO
+        pop ecx                         ;Desempilha ecx para LOOP EXTERNO
+        loop ordernarAlfabeto
+
+
+  pop eax
+  pop ebx
+  pop ecx
+  pop edx
+pop ebp
+ret
+
+;funcImprimirSeparador()
+funcImprimirSeparador:
+push ebp
+mov ebp, esp
+    push eax
       mov eax, ' '
-      call print_char             ;Imprime separador
-      loop exibirAlfabeto
-  call print_nl
+      call print_char     ;Imprime separador
+    pop eax
 pop ebp
 ret
 
@@ -40,6 +163,8 @@ ret
 funcBubbleAlfabeto:
 push ebp
 mov ebp, esp
+  push edx
+  push eax
 
   sub ebx, 4                    ;Aponta para "posição atual"
   mov [frequencia + ebx], edx   ;Atribui VALOR MENOR
@@ -61,5 +186,7 @@ mov ebp, esp
   mov eax, [menor]              ;eax = menor
   mov [alfabeto + ebx], eax     ;alfabeto[posição seguinte] = menor
 
+  pop eax
+  pop edx
 pop ebp
 ret

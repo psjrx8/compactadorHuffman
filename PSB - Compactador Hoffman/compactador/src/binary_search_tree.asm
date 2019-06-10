@@ -59,9 +59,9 @@ create_node:
     	xor	ebx, ebx
     	int	80h
 
-      ;Nó com 13 bytes
-      ;4 bytes [*Esquerda] + 4 bytes [*Direita] + 4 bytes [Frequencia] + 1 byte [Char]
-    	add	eax, 13	; reserve 13 bytes
+      ;Nó com 16 bytes
+      ;4 bytes [*Esquerda] + 4 bytes [*Direita] + 4 bytes [Frequencia] + 4 byte [Char]
+    	add	eax, 16	; reserve 16 bytes
     	mov	ebx, eax
     	mov	eax, 45		; sys_brk
     	int	80h
@@ -69,19 +69,6 @@ create_node:
 
     pop ebp
 ret
-
-; ;vetor dd com endereços dos nós
-; ordenarNodes:
-;     push ebp
-;     mov ebp, esp
-;
-;     ;empilhar tamanho do array
-;     ;empilhar posição do primeiro item
-;     mov eax, [ebp + 8] ;Aponta para o primeiro argumento
-;
-;
-;     pop ebp
-; ret
 
 ;insert(int x, *tree, *num_nodes)
 insert:
