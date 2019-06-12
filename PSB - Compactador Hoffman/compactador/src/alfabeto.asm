@@ -126,11 +126,8 @@ mov ebp, esp
           cmp eax, edx                  ;Compara "posição atual" e "posição seguinte"
           jle  sairSubOrdenarAlfabeto   ;Se "posição atual" > "posição seguinte" NOP (No operation)
                                         ;else
-          push ecx                      ;Empilha ecx para evitar alteração na FUNÇÃO interna
-          push ebx                      ;Empilha ebx para evitar alteração na FUNÇÃO interna
-            call funcBubbleAlfabeto     ;Função para trocar valores das "posição atual" e "posição seguinte"
-          pop ebx                       ;Desempilha ebx para LOOP INTERNO
-          pop ecx                       ;Desempilha ecx para LOOP INTERNO
+          call funcBubbleAlfabeto       ;Função para trocar valores das "posição atual" e "posição seguinte"
+
           sairSubOrdenarAlfabeto:
           loop subOrdenarAlfabeto
         pop ebx                         ;Desempilha ebx para LOOP EXTERNO

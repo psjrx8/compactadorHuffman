@@ -1,19 +1,19 @@
-;Cria os nós e o vetor de nós da arvore
-funcCriarVetorNos:
+;Cria os nós e o vetor de nós folha da arvore
+funcCriarVetorNosFolha:
 push ebp
 mov ebp, esp
   push edx
   push ecx
   push ebx
   push eax
-    mov byte [numNos], 0              ;Inicializa contador de nós
+    mov dword [numNos], 0                   ;Inicializa contador de nós
 
     mov ecx, 128                      ;Tamanho do loop
     mov ebx, 0
-    criarVetorNos:
+    criarVetorNosFolha:
         mov eax, [frequencia + ebx]
         cmp eax, 0                    ;Verifica incidencia do caractere no texto
-        je  sairCriarVetorNos
+        je  sairCriarVetorNosFolha
 
         ;Nó com 16 bytes
         ;4 bytes [*Esquerda] + 4 bytes [*Direita] + 4 bytes [Frequencia] + 4 byte [Char]
@@ -29,31 +29,43 @@ mov ebp, esp
         mov [eax -8], edx                ;Ponteiro direito  [menor frequencia]
         mov [eax -12], edx               ;Ponteiro esquerdo [maior frequencia]
 
-        push eax
-          mov edx, 4
-          mov eax, [numNos]   ;eax = numero de nós
-          imul edx            ;eax = eax * 4 (doubleword)
-          mov edx, eax        ;edx = eax (indice do array de nós)
-        pop eax
+        call funcIncluirVetorNo
 
-        push ebx
-        push eax
-          mov ebx, eax          ;ebx = eax (endereço do nó)
-          mov [nos + edx], ebx  ;Preenche array de nós (com endereços)
-        pop eax
-        pop ebx
-
-        add byte [numNos], 1    ;Incrementa contador de nós
-
-        sairCriarVetorNos:
+        sairCriarVetorNosFolha:
         add ebx, 4
-        loop criarVetorNos
+        loop criarVetorNosFolha
   pop eax
   pop ebx
   pop ecx
   pop edx
 pop ebp
 ret
+
+funcIncluirVetorNo:
+push ebp
+mov ebp, esp
+  push edx
+
+    push eax
+      mov edx, 4
+      mov eax, [numNos]   ;eax = numero de nós
+      imul edx            ;eax = eax * 4 (doubleword)
+      mov edx, eax        ;edx = eax (indice do array de nós)
+    pop eax
+
+    push ebx
+    push eax
+      mov ebx, eax          ;ebx = eax (endereço do nó)
+      mov [nos + edx], ebx  ;Preenche array de nós (com endereços)
+    pop eax
+    pop ebx
+
+    add dword [numNos], 1    ;Incrementa contador de nós
+
+  pop edx
+pop ebp
+ret
+
 
 ;funcImprimirNos()
 ;Imprime todos os nós do vetor
@@ -78,45 +90,10 @@ mov ebp, esp
     push ecx
     push ebx
 
-      mov ebx, [nos + ebx]    ;ebx = [endereço do nó]
-      mov eax, [ebx]          ;eax aponta para o nó
+      mov eax, [nos + ebx]
+      ;mov eax, [ebx]          ;eax aponta para o nó
 
-      ;Imprime letra
-      push eax
-        call funcImprimirLetra
-      pop eax
-
-      ;Imprime frequencia
-      push edx
-      push eax
-        mov edx, [ebx - 4]
-        mov eax, edx
-        call print_int
-        call funcImprimirSeparador
-      pop eax
-      pop edx
-
-      ;Imprime no direito [menor frequencia]
-      push edx
-      push eax
-        mov edx, [ebx - 8]
-        mov eax, edx
-        call print_int
-        call funcImprimirSeparador
-      pop eax
-      pop edx
-
-      ;Imprime no esquerdo [maior frequencia]
-      push edx
-      push eax
-        mov edx, [ebx - 12]
-        mov eax, edx
-        call print_int
-        call funcImprimirSeparador
-      pop eax
-      pop edx
-
-      call print_nl
+      call funcImprimirNo
 
     pop ebx
     pop ecx
@@ -183,9 +160,11 @@ ret
 funcCriarNoComposto:
 push ebp
 mov ebp, esp
+  push ecx
   push edx
   push ebx
 
+    mov ebx, 0
     mov dword [pesoNo], 0
 
     mov edx, [nos + ebx]  ;Caractere  4 bytes
@@ -212,7 +191,110 @@ mov ebp, esp
     mov edx, [noEsquerdo]
     mov [eax -12], edx    ;Ponteiro esquerdo [maior frequencia]
 
+    call funcDesempilhaNos
+
   pop ebx
+  pop edx
+  pop ecx
+pop ebp
+ret
+
+funcDesempilhaNos:
+push ebp
+mov ebp, esp
+  push ecx
+  push ebx
+  push eax
+    mov ecx, 2
+    desempilhaNos:
+      push ecx
+        mov ecx, [numNos]
+        sub ecx, 1
+        mov ebx, 4
+        subDesempilhaNos:
+          mov eax, [nos + ebx]
+          sub ebx, 4
+          mov [nos + ebx], eax
+          add ebx, 8
+        loop subDesempilhaNos
+      pop ecx
+    loop desempilhaNos
+    sub dword [numNos], 2
+  pop eax
+  pop ebx
+  pop ecx
+pop ebp
+ret
+
+funcOrdenarVetorNos:
+push ebp
+mov ebp, esp
+  push edx
+  push ecx
+  push ebx
+  push eax
+
+    mov ecx, [numNos]                      ;Tamanho do loop
+    sub ecx, 1
+    ordenarVetorNos:
+      push ecx
+        mov ebx, 0
+        subOrdenarVetorNos:
+          push ecx
+            mov eax, [nos + ebx]
+            mov ecx, [eax - 4]
+
+            ; push eax
+            ;   mov eax, [eax - 4]
+            ;   call print_int
+            ;   call funcImprimirSeparador
+            ; pop eax
+
+            add ebx, 4
+            mov eax, [nos + ebx]
+            mov edx, [eax - 4]
+
+            ; push eax
+            ;   mov eax, [eax - 4]
+            ;   call print_int
+            ;   call funcImprimirSeparador
+            ; pop eax
+
+            cmp ecx, edx
+            jle  sairSubOrdenarVetorNos   ;Se "posição atual" > "posição seguinte" NOP (No operation)
+
+            call funcBubbleNos            ;Função para trocar valores das "posição atual" e "posição seguinte"
+
+            sairSubOrdenarVetorNos:
+          pop ecx
+         loop subOrdenarVetorNos
+        ; call print_nl
+      pop ecx
+    loop ordenarVetorNos
+  pop eax
+  pop ebx
+  pop ecx
+  pop edx
+pop ebp
+ret
+
+funcBubbleNos:
+push ebp
+mov ebp, esp
+  push edx
+  push eax
+
+    mov eax, [nos + ebx]
+
+    sub ebx, 4
+    mov edx, [nos + ebx]
+
+    mov [nos + ebx], eax
+
+    add ebx, 4
+    mov [nos + ebx], edx
+
+  pop eax
   pop edx
 pop ebp
 ret

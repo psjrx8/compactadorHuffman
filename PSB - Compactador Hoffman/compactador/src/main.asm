@@ -12,6 +12,9 @@ segment .data
   debug_msg2 db "AQUI",10, 0
   debug_msg3 db "Memory: ", 0
 
+  codigo     times 128 db 0
+  correlato  times 128 db 0
+
 segment .bss
 
   menor  resd 1
@@ -20,11 +23,13 @@ segment .bss
   buffer resb 2048
 
   tree        resd 1
+
   nos         resd 128 ;ultimo nó para ordenação
-  numNos      resb 1
+  numNos      resd 1
   pesoNo      resd 1
   noDireito   resb 1
   noEsquerdo  resb 1
+  raiz        resb 1
 
 segment .text
 
@@ -68,14 +73,34 @@ asm_main:
     ;call funcExibirFrequencia
     ;call funcExibirAlfabeto
 
-    call funcCriarVetorNos
+    mov dword [numNos], 0  ;Inicializa contador de nós
+
+    call funcCriarVetorNosFolha
     ;call funcImprimirNos
 
-    ;Cria somente o primeiro nó da arvore (precisa deixar a operação genérica)
-    mov ebx, 0
-    call funcCriarNoComposto
-    ;call funcImprimirNo
+    ;call print_nl
 
+    mov edx, [numNos]
+    cmp edx, 2
+    je montaUltimoNo
+    montarArvore:
+
+      call funcCriarNoComposto
+      call funcIncluirVetorNo
+      call funcOrdenarVetorNos
+      ;call funcImprimirNos
+
+      mov edx, [numNos]
+      cmp edx, 2
+      jg montarArvore
+
+    montaUltimoNo:
+      call funcCriarNoComposto
+      ;call funcImprimirNo
+      mov [raiz], eax
+
+      ; mov eax, [raiz]
+      ; call print_int
 
 sair:
     call print_nl
