@@ -29,6 +29,9 @@ mov ebp, esp
         mov [eax -8], edx                ;Ponteiro direito  [menor frequencia]
         mov [eax -12], edx               ;Ponteiro esquerdo [maior frequencia]
 
+        ; call print_int
+        ; call print_nl
+
         call funcIncluirVetorNo
 
         sairCriarVetorNosFolha:
@@ -191,6 +194,8 @@ mov ebp, esp
     mov edx, [noEsquerdo]
     mov [eax -12], edx    ;Ponteiro esquerdo [maior frequencia]
 
+    ; call funcImprimirNo
+
     call funcDesempilhaNos
 
   pop ebx
@@ -268,7 +273,7 @@ mov ebp, esp
             sairSubOrdenarVetorNos:
           pop ecx
          loop subOrdenarVetorNos
-        ; call print_nl
+
       pop ecx
     loop ordenarVetorNos
   pop eax
@@ -296,5 +301,101 @@ mov ebp, esp
 
   pop eax
   pop edx
+pop ebp
+ret
+
+funcCodificaAlfabeto:
+push ebp
+mov ebp, esp
+  testaNoEsquerdo:
+    mov eax, [ebp + 8]
+    mov eax, [eax - 12]
+    ; push eax
+    ;   call print_int
+    ;   call funcImprimirSeparador
+    ;   mov eax, msgEsquerda
+    ;   call print_string
+    ;   call print_nl
+    ; pop eax
+    cmp eax, 0
+    je  testaNoDireito
+
+    mov ebx, [ebp + 12]
+    shl ebx, 1
+    add ebx, 1
+    push ebx
+    push eax
+      call funcCodificaAlfabeto
+    add esp, 8
+
+    testaNoDireito:
+      mov eax, [ebp + 8]
+      mov eax, [eax - 8]
+      ; push eax
+      ;   call print_int
+      ;   call funcImprimirSeparador
+      ;   mov eax, msgDireita
+      ;   call print_string
+      ;   call print_nl
+      ; pop eax
+      cmp eax, 0
+      je  codifica
+
+      mov ebx, [ebp + 12]
+      shl ebx, 1
+      push ebx
+      push eax
+        call funcCodificaAlfabeto
+      add esp, 8
+
+    jmp retorno
+
+    codifica:
+      mov eax, [ebp + 12]
+      mov [codigo + ecx], eax
+      ; push eax
+      ;   mov eax, [codigo + ecx]
+      ;   call print_int
+      ;   call funcImprimirSeparador
+      ; pop eax
+
+      mov eax, [ebp + 8]    ;*Arvore
+      mov eax, [eax]
+      mov [correlato + ecx], eax
+      ; push eax
+      ;   call funcImprimirLetra
+      ;   call funcImprimirSeparador
+      ; pop eax
+
+      add ecx, 4
+    retorno:
+pop ebp
+ret
+
+funcImprimirCodigo:
+push ebp
+mov ebp, esp
+  push ecx
+  push ebx
+  push eax
+    mov ecx, 128
+    mov ebx, 0
+    imprimirCodigo:
+      mov eax, [codigo + ebx]
+      cmp eax, 0
+      je sairImprimirCodigo
+      call print_int
+      call funcImprimirSeparador
+      mov eax, [correlato + ebx]
+      push eax
+        call funcImprimirLetra
+        call print_nl
+      pop eax
+      sairImprimirCodigo:
+      add ebx, 4
+    loop imprimirCodigo
+  pop eax
+  pop ebx
+  pop ecx
 pop ebp
 ret

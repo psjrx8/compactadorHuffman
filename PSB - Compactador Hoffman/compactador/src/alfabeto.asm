@@ -1,3 +1,14 @@
+funcFlag:
+push ebp
+mov ebp, esp
+  push eax
+    mov eax, msgFlag
+    call print_string
+    call print_nl
+  pop eax
+pop ebp
+ret
+
 ;funcExibirAlfabeto()
 funcCriarAlfabeto:
 push ebp
