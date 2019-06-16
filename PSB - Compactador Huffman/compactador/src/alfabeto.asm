@@ -164,7 +164,7 @@ mov ebp, esp
 pop ebp
 ret
 
-;Se "posição atual" > "posição seguinte"
+;Se "posição atual" < "posição seguinte"
 ;Registrador ebx (índice) apontando para "posição seguinte"
 ;Registrador eax contém VALOR MAIOR
 ;Registrador edx contém VALOR MENOR
@@ -196,5 +196,37 @@ mov ebp, esp
 
   pop eax
   pop edx
+pop ebp
+ret
+
+;Função para imprimir código binário do registrador
+;funcImprimirBinario(*registrador)
+funcImprimirBinario:
+push ebp
+mov ebp, esp
+  push ecx
+  push eax
+    mov ecx, 32
+    mov eax, [ebp + 8]
+    imprimirBinario:
+      shl eax, 1
+      jc um
+      push eax
+        mov eax, 48
+        call print_char
+      pop eax
+
+      jmp sairImprimirBinario
+      um:
+      push eax
+        mov eax, 49
+        call print_char
+      pop eax
+
+      sairImprimirBinario:
+    loop imprimirBinario
+
+  pop eax
+  pop ecx
 pop ebp
 ret

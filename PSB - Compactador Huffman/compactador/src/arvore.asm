@@ -6,7 +6,7 @@ mov ebp, esp
   push ecx
   push ebx
   push eax
-    mov dword [numNos], 0                   ;Inicializa contador de nós
+    mov dword [numNos], 0             ;Inicializa contador de nós
 
     mov ecx, 128                      ;Tamanho do loop
     mov ebx, 0
@@ -19,7 +19,7 @@ mov ebp, esp
         ;4 bytes [*Esquerda] + 4 bytes [*Direita] + 4 bytes [Frequencia] + 4 byte [Char]
         call create_node
 
-        mov edx, [alfabeto + ebx]         ;Caractere  4 bytes
+        mov edx, [alfabeto + ebx]     ;Caractere  4 bytes
         mov [eax], edx
 
         mov edx, dword [frequencia + ebx] ;Frequencia 4 bytes
@@ -160,6 +160,8 @@ mov ebp, esp
 pop ebp
 ret
 
+;Cria nó composto com os 2 primeiros registros do vetor nos
+;funcCriarNoComposto()
 funcCriarNoComposto:
 push ebp
 mov ebp, esp
@@ -168,35 +170,37 @@ mov ebp, esp
   push ebx
 
     mov ebx, 0
-    mov dword [pesoNo], 0
+    mov dword [pesoNo], 0   ; Zera peso do nó
 
-    mov edx, [nos + ebx]  ;Caractere  4 bytes
+    ; Atribui o primeiro item do vetor ao registrador edx
+    mov edx, [nos + ebx]
     mov [noDireito], edx
     mov eax, [edx - 4]
-    add [pesoNo], eax
+    add [pesoNo], eax       ; Acrescenta frequencia ao peso do nó
 
+    ; Atribui o segundo item do vetor ao registrador edx
     add ebx, 4
-    mov edx, [nos + ebx]  ;Caractere  4 bytes
+    mov edx, [nos + ebx]
     mov [noEsquerdo], edx
     mov eax, [edx - 4]
-    add [pesoNo], eax
+    add [pesoNo], eax       ; Acrescenta frequencia ao peso do nó
 
-    call create_node
+    call create_node        ; Cria nó
 
-    mov edx, 129           ;Caractere  4 bytes
+    mov edx, 129            ; Atribui caractere 129 ao nó (Não compõe alfabeto)
     mov [eax], edx
 
-    mov edx, [pesoNo]     ;Frequencia 4 bytes
+    mov edx, [pesoNo]       ; Atribui a frequencia do nó [peso]
     mov [eax - 4], edx
 
     mov edx, [noDireito]
-    mov [eax -8], edx     ;Ponteiro direito  [menor frequencia]
+    mov [eax -8], edx       ;Ponteiro direito  [menor frequencia]
     mov edx, [noEsquerdo]
-    mov [eax -12], edx    ;Ponteiro esquerdo [maior frequencia]
+    mov [eax -12], edx      ;Ponteiro esquerdo [maior frequencia]
 
     ; call funcImprimirNo
 
-    call funcDesempilhaNos
+    call funcDesempilhaNos  ; Retira os dois nós do vetor
 
   pop ebx
   pop edx
@@ -204,19 +208,21 @@ mov ebp, esp
 pop ebp
 ret
 
+; Função para retirar do vetor os 2 nós que compõe o nó composto
+;funcDesempilhaNos()
 funcDesempilhaNos:
 push ebp
 mov ebp, esp
   push ecx
   push ebx
   push eax
-    mov ecx, 2
+    mov ecx, 2                    ; Número de loops
     desempilhaNos:
       push ecx
-        mov ecx, [numNos]
+        mov ecx, [numNos]         ; Número do loops
         sub ecx, 1
         mov ebx, 4
-        subDesempilhaNos:
+        subDesempilhaNos:         ; [nos + n] = [nos + n + 1]
           mov eax, [nos + ebx]
           sub ebx, 4
           mov [nos + ebx], eax
@@ -224,13 +230,15 @@ mov ebp, esp
         loop subDesempilhaNos
       pop ecx
     loop desempilhaNos
-    sub dword [numNos], 2
+    sub dword [numNos], 2         ; Subtrai os nós do vetor
   pop eax
   pop ebx
   pop ecx
 pop ebp
 ret
 
+;Ordena os nós no vetor de nós
+;funcOrdenarVetorNos()
 funcOrdenarVetorNos:
 push ebp
 mov ebp, esp
@@ -247,7 +255,7 @@ mov ebp, esp
         subOrdenarVetorNos:
           push ecx
             mov eax, [nos + ebx]
-            mov ecx, [eax - 4]
+            mov ecx, [eax - 4]        ; Atribui frequencia do primeiro nó a ecx
 
             ; push eax
             ;   mov eax, [eax - 4]
@@ -257,7 +265,7 @@ mov ebp, esp
 
             add ebx, 4
             mov eax, [nos + ebx]
-            mov edx, [eax - 4]
+            mov edx, [eax - 4]        ; Atribui frequencia do segundo nó a edx
 
             ; push eax
             ;   mov eax, [eax - 4]
@@ -283,6 +291,10 @@ mov ebp, esp
 pop ebp
 ret
 
+;Se "posição atual" < "posição seguinte"
+;Registrador ebx (índice) apontando para "posição seguinte"
+;Registrador eax contém VALOR MAIOR
+;Registrador edx contém VALOR MENOR
 funcBubbleNos:
 push ebp
 mov ebp, esp
@@ -304,29 +316,12 @@ mov ebp, esp
 pop ebp
 ret
 
+;Função que atribui valor às posições da arvore
+;Obs.: Registrardor ecx precisa ser igual a 0
+;funcCodificaAlfabeto(*Arvore, int codigo)
 funcCodificaAlfabeto:
 push ebp
 mov ebp, esp
-  testaNoEsquerdo:
-    mov eax, [ebp + 8]
-    mov eax, [eax - 12]
-    ; push eax
-    ;   call print_int
-    ;   call funcImprimirSeparador
-    ;   mov eax, msgEsquerda
-    ;   call print_string
-    ;   call print_nl
-    ; pop eax
-    cmp eax, 0
-    je  testaNoDireito
-
-    mov ebx, [ebp + 12]
-    shl ebx, 1
-    add ebx, 1
-    push ebx
-    push eax
-      call funcCodificaAlfabeto
-    add esp, 8
 
     testaNoDireito:
       mov eax, [ebp + 8]
@@ -339,18 +334,44 @@ mov ebp, esp
       ;   call print_nl
       ; pop eax
       cmp eax, 0
-      je  codifica
+      je  testaNoEsquerdo
 
       mov ebx, [ebp + 12]
       shl ebx, 1
+      add ebx, 1
       push ebx
       push eax
         call funcCodificaAlfabeto
-      add esp, 8
+      add esp, 4
+      pop ebx
+      shr ebx, 1
+
+    testaNoEsquerdo:
+      mov eax, [ebp + 8]
+      mov eax, [eax - 12]
+      ; push eax
+      ;   call print_int
+      ;   call funcImprimirSeparador
+      ;   mov eax, msgEsquerda
+      ;   call print_string
+      ;   call print_nl
+      ; pop eax
+      cmp eax, 0
+      je  armazenaCodigo
+
+      mov ebx, [ebp + 12]
+      shl ebx, 1
+      ; add ebx, 1
+      push ebx
+      push eax
+        call funcCodificaAlfabeto
+      add esp, 4
+      pop ebx
+      shr ebx, 1
 
     jmp retorno
 
-    codifica:
+    armazenaCodigo:
       mov eax, [ebp + 12]
       mov [codigo + ecx], eax
       ; push eax
@@ -359,25 +380,34 @@ mov ebp, esp
       ;   call funcImprimirSeparador
       ; pop eax
 
-      mov eax, [ebp + 8]    ;*Arvore
+      mov eax, [ebp + 8]
       mov eax, [eax]
       mov [correlato + ecx], eax
       ; push eax
       ;   call funcImprimirLetra
       ;   call funcImprimirSeparador
       ; pop eax
+      ;
+      ; push ebx
+      ;   call funcImprimirBinario
+      ;   call print_nl
+      ; pop ebx
 
       add ecx, 4
     retorno:
 pop ebp
 ret
 
-funcImprimirCodigo:
+;Função para imprimir os códigos do alfabeto
+;funcImprimirCodigos
+funcImprimirCodigos:
 push ebp
 mov ebp, esp
   push ecx
   push ebx
   push eax
+
+    call print_nl
     mov ecx, 128
     mov ebx, 0
     imprimirCodigo:
@@ -389,7 +419,7 @@ mov ebp, esp
       mov eax, [correlato + ebx]
       push eax
         call funcImprimirLetra
-        call print_nl
+        call funcImprimirSeparador
       pop eax
       sairImprimirCodigo:
       add ebx, 4
@@ -397,5 +427,47 @@ mov ebp, esp
   pop eax
   pop ebx
   pop ecx
+pop ebp
+ret
+
+;Identifica código do caractere
+;funcCodificar(*Caractere)
+funcCodificar:
+push ebp
+mov ebp, esp
+  push edx
+  push ecx
+  push ebx
+    mov edx, [ebp + 8]
+    mov ecx, 128
+    mov ebx, 0
+    codificar:
+      mov eax, [correlato + ebx]
+      push edx
+      push ebx
+        mov ebx, 4
+        cdq
+        div ebx
+        ; push eax
+        ;   call print_char
+        ;   call funcImprimirSeparador
+        ; pop eax
+      pop ebx
+      pop edx
+      cmp eax, edx
+      je sairCodificar
+      add ebx, 4
+      loop codificar
+    sairCodificar:
+      mov eax, [codigo + ebx]
+      ; push eax
+      ;   mov eax, ebx
+      ;   call print_int
+      ;   call print_nl
+      ; pop eax
+
+  pop ebx
+  pop ecx
+  pop edx
 pop ebp
 ret

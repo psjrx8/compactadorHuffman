@@ -8,7 +8,7 @@ segment .data
   codigo     times 128 dd 0
   correlato  times 128 dd 0
 
-  buflen dd 2048
+  bufferTamanho dd 2048
 
   arquivoOriginal   db "texto.txt", 0
   arquivoCompactado db "texto.huf", 0
@@ -28,7 +28,8 @@ segment .bss
   menor  resd 1
   maior  resd 1
 
-  buffer resb 2048
+  bufferTxt  resb 2048
+  bufferHuf  resb 2048
 
   tree        resd 1
 
@@ -55,15 +56,15 @@ asm_main:
 
     ;Lê arquivo e preenche as variáveis de buffer
     push arquivoOriginal
-    push buffer
-    push buflen
+    push bufferTxt
+    push bufferTamanho
       call read_file
     add esp, 12
 
     ;call print_nl
 
     ;Imprime conteúdo do buffeer e conta frequencia de caracteres
-    mov esi, buffer
+    mov esi, bufferTxt
     cld
     printArquivoTexto:
     lodsb                         ;al=[esi] e esi+=1
@@ -79,8 +80,8 @@ asm_main:
     ;call funcExibirFrequencia
 
     call funcOrdenarAlfabeto
-    ;call funcExibirFrequencia
-    ;call funcExibirAlfabeto
+    ; call funcExibirFrequencia
+    ; call funcExibirAlfabeto
 
     mov dword [numNos], 0  ;Inicializa contador de nós
 
@@ -97,7 +98,7 @@ asm_main:
       call funcCriarNoComposto
       call funcIncluirVetorNo
       call funcOrdenarVetorNos
-      ;call funcImprimirNos
+      ; call funcImprimirNos
 
       mov edx, [numNos]
       cmp edx, 2
@@ -105,11 +106,13 @@ asm_main:
 
     montaUltimoNo:
       call funcCriarNoComposto
-      ;call funcImprimirNo
+      ; call funcImprimirNo
       mov [raiz], eax
 
       ; mov eax, [raiz]
       ; call print_int
+
+    call print_nl
 
     mov ecx, 0
     mov edx, [raiz]
@@ -119,7 +122,34 @@ asm_main:
       call funcCodificaAlfabeto
     add esp, 8
 
-    ; call funcImprimirCodigo
+    ; call funcImprimirCodigos
+    ; call print_nl
+
+    mov eax, 97
+    push eax
+      call print_char
+      call funcImprimirSeparador
+      call funcCodificar
+      call print_int
+      call funcImprimirSeparador
+      push eax
+        call funcImprimirBinario
+      pop eax
+    add esp, 4
+
+    ; mov esi, bufferTxt
+    ; mov edi, bufferHuf
+    ; cld
+    ; escreveAlfabeto:
+    ; lodsb                       ;al=[esi] e esi+=1
+    ;   cmp al, 0                 ;Verifica final do arquivo
+    ;   je sairPrintArquivoTexto  ;Pula se igual
+    ;   movzx eax, al             ;Estende o registrador al para eax
+    ;   call print_char           ;Imprime o caractere em eax
+    ;   imul eax, 4               ;Multiplica o caractere para encontrar posição no array de frequencia
+    ;   add dword [frequencia + eax], 1 ;Incrementa array de frequencia na posição do caractere
+    ; jmp printArquivoTexto
+    ; sairPrintArquivoTexto:
 
     ; push arquivoCompactado
     ; push text
