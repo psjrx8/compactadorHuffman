@@ -5,15 +5,16 @@ segment .data
   alfabeto   times 128 dd 0
   frequencia times 128 dd 0
 
-  codigo     times 128 dd 0
-  correlato  times 128 dd 0
+  codigo           times 128 dd 0
+  qtdBitCodigo     times 128 dd 0
+  correlato        times 128 dd 0
 
   bufferTamanho dd 2048
 
   arquivoOriginal   db "texto.txt", 0
   arquivoCompactado db "texto.huf", 0
-  text db "This is the content of my file. The zero after this string indicates the end of file, ok?!", 0
-  textlen equ $ - text
+  ; text db "This is the content of my file. The zero after this string indicates the end of file, ok?!", 0
+  ; textlen equ $ - text
 
   debug_msg1 db "===== DEBUG ====", 0
   debug_msg2 db "AQUI",10, 0
@@ -23,13 +24,18 @@ segment .data
   msgEsquerda db "Nó esquerda", 0
   msgFlag     db "Aqui!!", 0
 
+  bufferHuf        times 2048 db 0
+  bufferHufTamanho equ - bufferHuf
+
 segment .bss
 
   menor  resd 1
   maior  resd 1
 
-  bufferTxt  resb 2048
-  bufferHuf  resb 2048
+  bufferTxt     resb 2048
+  contBuffer    resd 1
+  qtdBit        resb 1
+  qtdBitBuffer  resd 1
 
   tree        resd 1
 
@@ -52,7 +58,7 @@ segment .text
 asm_main:
 
     call funcCriarAlfabeto   ;Função para imprimir alfabeto
-    ;call funcExibirAlfabeto   ;Função para imprimir alfabeto
+    ; call funcExibirAlfabeto   ;Função para imprimir alfabeto
 
     ;Lê arquivo e preenche as variáveis de buffer
     push arquivoOriginal
@@ -63,7 +69,7 @@ asm_main:
 
     ;call print_nl
 
-    ;Imprime conteúdo do buffeer e conta frequencia de caracteres
+    ;Imprime conteúdo do buffer e conta frequencia de caracteres
     mov esi, bufferTxt
     cld
     printArquivoTexto:
@@ -71,13 +77,13 @@ asm_main:
       cmp al, 0                 ;Verifica final do arquivo
       je sairPrintArquivoTexto  ;Pula se igual
       movzx eax, al             ;Estende o registrador al para eax
-      call print_char           ;Imprime o caractere em eax
+      ; call print_char           ;Imprime o caractere em eax
       imul eax, 4               ;Multiplica o caractere para encontrar posição no array de frequencia
       add dword [frequencia + eax], 1 ;Incrementa array de frequencia na posição do caractere
     jmp printArquivoTexto
     sairPrintArquivoTexto:
 
-    ;call funcExibirFrequencia
+    ; call funcExibirFrequencia
 
     call funcOrdenarAlfabeto
     ; call funcExibirFrequencia
@@ -86,9 +92,9 @@ asm_main:
     mov dword [numNos], 0  ;Inicializa contador de nós
 
     call funcCriarVetorNosFolha
-    ;call funcImprimirNos
+    ; call funcImprimirNos
 
-    ;call print_nl
+    ; call print_nl
 
     mov edx, [numNos]
     cmp edx, 2
@@ -112,48 +118,45 @@ asm_main:
       ; mov eax, [raiz]
       ; call print_int
 
-    call print_nl
+    ; call print_nl
 
-    mov ecx, 0
-    mov edx, [raiz]
+    mov eax, [raiz]
     mov ebx, 0
+    mov ecx, 0
+    mov edx, 0
     push ebx
-    push edx
+    push eax
       call funcCodificaAlfabeto
     add esp, 8
 
     ; call funcImprimirCodigos
     ; call print_nl
 
-    mov eax, 97
-    push eax
-      call print_char
-      call funcImprimirSeparador
-      call funcCodificar
-      call print_int
-      call funcImprimirSeparador
-      push eax
-        call funcImprimirBinario
-      pop eax
-    add esp, 4
+    mov dword [contBuffer], 0
+    mov byte  [qtdBit], 0
+    mov dword [contBuffer], 0
 
-    ; mov esi, bufferTxt
-    ; mov edi, bufferHuf
-    ; cld
-    ; escreveAlfabeto:
-    ; lodsb                       ;al=[esi] e esi+=1
-    ;   cmp al, 0                 ;Verifica final do arquivo
-    ;   je sairPrintArquivoTexto  ;Pula se igual
-    ;   movzx eax, al             ;Estende o registrador al para eax
-    ;   call print_char           ;Imprime o caractere em eax
-    ;   imul eax, 4               ;Multiplica o caractere para encontrar posição no array de frequencia
-    ;   add dword [frequencia + eax], 1 ;Incrementa array de frequencia na posição do caractere
-    ; jmp printArquivoTexto
-    ; sairPrintArquivoTexto:
+    call funcCodificarArquivoTexto
+
+    push ecx
+    push eax
+      mov ecx, [contBuffer]
+      mov al, 10
+      mov [bufferHuf + ecx], al
+      inc dword [contBuffer]
+    pop eax
+
+    call funcEscreverTabelaHuf
+
+    mov ebx, [contBuffer]
+    mov byte [bufferHuf + ebx], -1
+    inc byte [contBuffer]
+
+    call funcImprimirArquivoHuf
 
     ; push arquivoCompactado
-    ; push text
-    ; push dword textlen
+    ; push bufferHuf
+    ; push dword bufferHufTamanho
     ; call write_file
     ; add esp, 12
 

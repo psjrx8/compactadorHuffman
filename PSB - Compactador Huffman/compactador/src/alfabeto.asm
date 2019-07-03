@@ -15,14 +15,18 @@ push ebp
 mov ebp, esp
   push ecx
   push ebx
+  push eax
 
   mov ecx, 128                ;Determina range do loop (127 iterações)
   mov ebx, 0                  ;Define valor inicial do índice do array
+  mov eax, 0
   preencherAlfabeto:
-  mov [alfabeto + ebx], ebx   ;Atribui ao array o valor do índice
+  mov [alfabeto + ebx], eax   ;Atribui ao array o valor do índice
+  add eax, 1
   add ebx, 4                  ;Incrementa registrador do índice
   loop preencherAlfabeto
 
+  pop eax
   pop ebx
   pop ecx
 pop ebp
@@ -65,14 +69,14 @@ mov ebp, esp
     push eax
 
     mov eax, [ebp + 8]  ;eax = alfabeto[i]
-    mov ebx, 4
-    cdq
-    div ebx
+    ; mov ebx, 4
+    ; cdq
+    ; mul ebx
     call print_char
 
-    push eax
-      call funcImprimirSeparador
-    pop eax
+    ; push eax
+    ;   call funcImprimirSeparador
+    ; pop eax
 
     pop eax
     pop ebx
@@ -228,5 +232,66 @@ mov ebp, esp
 
   pop eax
   pop ecx
+pop ebp
+ret
+
+funcIntParaChar:
+push ebp
+mov ebp, esp
+  cmp eax, 0
+  je intZero
+  cmp eax, 1
+  je intUm
+  cmp eax, 2
+  je intDois
+  cmp eax, 3
+  je intTres
+  cmp eax, 4
+  je intQuatro
+  cmp eax, 5
+  je intCinco
+  cmp eax, 6
+  je intSeis
+  cmp eax, 7
+  je intSete
+  cmp eax, 8
+  je intOito
+  cmp eax, 9
+  je intNove
+  mov eax, -1
+  jmp sairIntParaChar
+
+  intZero:
+    mov eax, 48
+    jmp sairIntParaChar
+  intUm:
+    mov eax, 49
+    jmp sairIntParaChar
+  intDois:
+    mov eax, 49
+    jmp sairIntParaChar
+  intTres:
+    mov eax, 51
+    jmp sairIntParaChar
+  intQuatro:
+    mov eax, 52
+    jmp sairIntParaChar
+  intCinco:
+    mov eax, 53
+    jmp sairIntParaChar
+  intSeis:
+    mov eax, 54
+    jmp sairIntParaChar
+  intSete:
+    mov eax, 55
+    jmp sairIntParaChar
+  intOito:
+    mov eax, 56
+    jmp sairIntParaChar
+  intNove:
+    mov eax, 57
+    jmp sairIntParaChar
+
+  sairIntParaChar:
 pop ebp
 ret

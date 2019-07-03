@@ -317,7 +317,7 @@ pop ebp
 ret
 
 ;Função que atribui valor às posições da arvore
-;Obs.: Registrardor ecx precisa ser igual a 0
+;Obs.: Registrador ecx e edx precisa ser igual a 0
 ;funcCodificaAlfabeto(*Arvore, int codigo)
 funcCodificaAlfabeto:
 push ebp
@@ -339,12 +339,15 @@ mov ebp, esp
       mov ebx, [ebp + 12]
       shl ebx, 1
       add ebx, 1
+      inc edx
+
       push ebx
       push eax
         call funcCodificaAlfabeto
       add esp, 4
       pop ebx
       shr ebx, 1
+      dec edx
 
     testaNoEsquerdo:
       mov eax, [ebp + 8]
@@ -362,18 +365,24 @@ mov ebp, esp
       mov ebx, [ebp + 12]
       shl ebx, 1
       ; add ebx, 1
+      inc edx
+
       push ebx
       push eax
         call funcCodificaAlfabeto
       add esp, 4
       pop ebx
       shr ebx, 1
+      dec edx
 
     jmp retorno
 
     armazenaCodigo:
       mov eax, [ebp + 12]
       mov [codigo + ecx], eax
+
+      mov [qtdBitCodigo + ecx], edx
+
       ; push eax
       ;   mov eax, [codigo + ecx]
       ;   call print_int
@@ -390,8 +399,14 @@ mov ebp, esp
       ;
       ; push ebx
       ;   call funcImprimirBinario
-      ;   call print_nl
+      ;   call funcImprimirSeparador
       ; pop ebx
+      ;
+      ; push eax
+      ;   mov eax, [qtdBitCodigo + ecx]
+      ;   call print_int
+      ;   call print_nl
+      ; pop eax
 
       add ecx, 4
     retorno:
@@ -457,7 +472,7 @@ mov ebp, esp
       cmp eax, edx
       je sairCodificar
       add ebx, 4
-      loop codificar
+    loop codificar
     sairCodificar:
       mov eax, [codigo + ebx]
       ; push eax
@@ -469,5 +484,320 @@ mov ebp, esp
   pop ebx
   pop ecx
   pop edx
+pop ebp
+ret
+
+; ;Identifica código do caractere
+; funcCodificarTextoHuf:
+; push ebp
+; mov ebp, esp
+;   push edx
+;   push ecx
+;   push ebx
+;   push eax
+;     mov edx, [ebp + 8]
+;     mov eax, edx
+;     mov ecx, 128
+;     mov ebx, 0
+;     compararCaractere:
+;       mov eax, [correlato + ebx]
+;       cmp eax, edx
+;       je sairCompararCaractere
+;       add ebx, 4
+;     loop compararCaractere
+;     jmp out
+;     sairCompararCaractere:
+;       push ecx
+;         mov ecx, 32
+;         mov eax, 0
+;         mov edx, [codigo + ebx]
+;         escreverCodigoHuf:
+;           push edx
+;             call funcImprimirBinario
+;             call print_nl
+;           pop edx
+;           cmp ecx, [qtdBitCodigo + ebx]
+;           jg sairEscreverCodigoHuf
+;
+;           push eax
+;             mov eax, 8
+;             cmp eax, [qtdBit]
+;           pop eax
+;           jne testaBit
+;
+;           push ecx
+;             mov byte [qtdBit], 0
+;             mov ecx, [contBuffer]
+;             mov [bufferHuf + ecx], al
+;             inc dword [contBuffer]
+;           pop ecx
+;
+;           testaBit:
+;             shr edx, 1
+;             jz zero
+;               shr al, 1
+;               inc al
+;             zero:
+;               shr al, 1
+;             inc byte [qtdBit]
+;
+;           sairEscreverCodigoHuf:
+;         loop escreverCodigoHuf
+;       out:
+;       pop ecx
+;   pop eax
+;   pop ebx
+;   pop ecx
+;   pop edx
+; pop ebp
+; ret
+
+funcCodigoCharHuf:
+push ebp
+mov ebp, esp
+  push ecx
+  push ebx
+  push eax
+    mov eax, [ebp + 8]
+    mov ecx, 128
+    mov ebx, 0
+    compararCaractere:
+      cmp eax, [correlato + ebx]
+      je achouCaractere
+      add ebx, 4
+    loop compararCaractere
+    jmp sairCompararCaractere
+    achouCaractere:
+      push ecx
+        mov ecx, 32
+        mov eax, [codigo + ebx]
+        escreverCodigoHuf:
+          shl eax, 1
+          jc codigoUm
+            cmp ecx, [qtdBitCodigo + ebx]
+            jg sairEscreverCodigoHuf
+
+            ; push eax
+            ;   mov eax, [qtdBitCodigo + ebx]
+            ;   call print_int
+            ; pop eax
+
+            push ecx
+            push eax
+              mov ecx, [contBuffer]
+              mov al, 48
+              mov [bufferHuf + ecx], al
+              inc dword [contBuffer]
+            pop eax
+            pop ecx
+            jmp sairEscreverCodigoHuf
+          codigoUm:
+            cmp ecx, [qtdBitCodigo + ebx]
+            jg sairEscreverCodigoHuf
+
+            ; push eax
+            ;   mov eax, [qtdBitCodigo + ebx]
+            ;   call print_int
+            ; pop eax
+
+            push ecx
+            push eax
+              mov ecx, [contBuffer]
+              mov al, 49
+              mov [bufferHuf + ecx], al
+              inc dword [contBuffer]
+            pop eax
+            pop ecx
+          sairEscreverCodigoHuf:
+        loop escreverCodigoHuf
+      pop ecx
+    sairCompararCaractere:
+  pop eax
+  pop ebx
+  pop ecx
+pop ebp
+ret
+
+funcCodigoTextoHuf:
+push ebp
+mov ebp, esp
+  push ecx
+  push ebx
+  push eax
+
+    mov eax, [ebp + 8]
+    mov ecx, 128
+    mov ebx, 0
+    compararCaractereTexto:
+      cmp eax, [correlato + ebx]
+      je achouCaractereTexto
+      add ebx, 4
+    loop compararCaractereTexto
+    jmp sairCompararCaractereTexto
+    achouCaractereTexto:
+      push ecx
+        mov ecx, 32
+        mov eax, [codigo + ebx]
+        escreverTextoHuf:
+          shl eax, 1
+          jc textoUm
+            cmp ecx, [qtdBitCodigo + ebx]
+            jg sairEscreverTextoHuf
+
+            push ecx
+            push eax
+              mov ecx, [contBuffer]
+              mov al, [bufferHuf + ecx]
+              shl al, 1
+              mov [bufferHuf + ecx], al
+              inc byte [qtdBit]
+            pop eax
+            pop ecx
+            jmp sairEscreverTextoHuf
+          textoUm:
+            cmp ecx, [qtdBitCodigo + ebx]
+            jg sairEscreverTextoHuf
+
+            push ecx
+            push eax
+              mov ecx, [contBuffer]
+              mov al, [bufferHuf + ecx]
+              shl al, 1
+              add al, 1
+              mov [bufferHuf + ecx], al
+              inc byte [qtdBit]
+            pop eax
+            pop ecx
+
+          sairEscreverTextoHuf:
+            push eax
+              mov eax, [qtdBit]
+              cmp eax, 7
+              jne mantemContadorBuffer
+              mov byte [qtdBit], 0
+              inc dword [contBuffer]
+              ; call funcFlag
+              mantemContadorBuffer:
+            pop eax
+        loop escreverTextoHuf
+      pop ecx
+    sairCompararCaractereTexto:
+
+  pop eax
+  pop ebx
+  pop ecx
+pop ebp
+ret
+
+funcEscreverTabelaHuf:
+push ebp
+mov ebp, esp
+  push edx
+  push ecx
+  push ebx
+  push eax
+    mov ecx, 128                      ;Tamanho do loop
+    mov ebx, 0
+    escreverTabela:
+      push ecx
+        mov eax, [correlato + ebx]
+        cmp eax, 0
+        je sairSubEscreverTabela
+
+        push ecx
+          mov ecx, [contBuffer]
+          mov [bufferHuf + ecx], al
+          inc ecx
+          ; movsx eax, al
+          ; call print_char
+          ; call funcImprimirSeparador
+          push eax
+            mov al, 45
+            mov [bufferHuf + ecx], al
+            inc ecx
+          pop eax
+
+          mov [contBuffer], ecx
+          push eax
+            call funcCodigoCharHuf
+          pop eax
+          mov ecx, [contBuffer]
+
+          ; push eax
+          ;   mov al, 45
+          ;   mov [bufferHuf + ecx], al
+          ;   inc ecx
+          ; pop eax
+          ;
+          ; mov eax, [qtdBitCodigo + ebx]
+          ; call funcIntParaChar
+          ; mov [bufferHuf + ecx], al
+          ; inc ecx
+
+          push eax
+            mov al, 10
+            mov [bufferHuf + ecx], al
+            inc ecx
+          pop eax
+
+          mov [contBuffer], ecx
+
+
+          ; movsx eax, al
+          ; call print_char
+          ; call funcImprimirSeparador
+
+        pop ecx
+
+        sairSubEscreverTabela:
+        add ebx, 4
+      pop ecx
+    loop escreverTabela
+    inc byte [contBuffer]
+  pop eax
+  pop ebx
+  pop ecx
+  pop edx
+pop ebp
+ret
+
+funcImprimirArquivoHuf:
+push ebp
+mov ebp, esp
+  push eax
+    mov esi, bufferHuf
+    cld
+    printArquivoHuf:
+    lodsb                        ;al=[esi] e esi+=1
+      cmp al, -1                 ;Verifica final do arquivo
+      je sairPrintArquivoHuf  ;Pula se igual
+      movzx eax, al             ;Estende o registrador al para eax
+      call print_char
+      ; call funcImprimirSeparador
+    jmp printArquivoHuf
+    sairPrintArquivoHuf:
+  pop eax
+pop ebp
+ret
+
+
+funcCodificarArquivoTexto:
+push ebp
+mov ebp, esp
+  push eax
+    mov esi, bufferTxt
+    cld
+    codificarArquivoTexto:
+    lodsb                         ;al=[esi] e esi+=1
+      cmp al, 0                 ;Verifica final do arquivo
+      je sairCodificarArquivoTexto  ;Pula se igual
+      movzx eax, al             ;Estende o registrador al para eax
+      push eax
+        call funcCodigoTextoHuf
+      pop eax
+    jmp codificarArquivoTexto
+    sairCodificarArquivoTexto:
+    inc dword [contBuffer]
+  pop eax
 pop ebp
 ret
